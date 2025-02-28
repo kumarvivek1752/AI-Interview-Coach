@@ -10,7 +10,8 @@
   "license": "ISC",
   "description": "",
   "dependencies": {
-    "@screenpipe/js": "^1.0.17"
+    "@screenpipe/js": "^1.0.17",
+    "express": "^4.21.2"
   },
   "type": "module"
 }
