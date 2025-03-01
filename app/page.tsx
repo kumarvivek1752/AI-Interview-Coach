@@ -9,6 +9,8 @@ import { ClientOnly } from "@/lib/client-only";
 import { Inter } from "next/font/google";
 import healthStatusContent from '../content/health-status-card.json';
 import { useEffect, useState } from "react";
+import { RealtimeAudio } from "../components/screenpipe/realtime-audio"
+import { LastAudioTranscription } from "@/components/ready-to-use-examples/last-audio-transcription";
 
 const inter = Inter({ 
   subsets: ['latin'],
@@ -46,7 +48,9 @@ export default function Page() {
 
   return (
     <SettingsProvider>
-      <ClientOnly>
+      <RealtimeAudio />
+      <LastAudioTranscription />
+      {/* <ClientOnly>
         <div className={`flex flex-col gap-6 items-center justify-center h-full mt-12 px-4 pb-12 ${inter.className}`}>
           <h1 className="text-2xl font-bold mb-0">example app (pipe) for developers</h1>
           <p className="text-gray-600 mb-2 -mt-5">ready-to-use components for engineers building apps with screenpipe</p>
@@ -74,7 +78,7 @@ export default function Page() {
             )}
           </div>
         </div>
-      </ClientOnly>
+      </ClientOnly> */}
     </SettingsProvider>
   );
 }
