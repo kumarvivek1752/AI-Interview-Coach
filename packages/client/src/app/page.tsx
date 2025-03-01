@@ -1,28 +1,25 @@
-"use client";
-import { useState, useEffect, useRef } from "react";
+  "use client";
+  import { useState, useEffect, useRef } from "react";
 
-interface TranscriptionData {
-  device: string;
-  isFinal: boolean;
-  text: string;
-}
+  interface TranscriptionData {
+    device: string;
+    isFinal: boolean;
+    text: string;
+  }
 
-const LiveTranscription = () => {
-  const [finalText, setFinalText] = useState<string>("");
-  const [partialText, setPartialText] = useState<string>("");
-  const [isConnected, setIsConnected] = useState(false);
-  const [error, setError] = useState<string | null>(null);
-  const eventSourceRef = useRef<EventSource | null>(null);
-
-  useEffect(() => {
-    // Initialize the connection
+  const LiveTranscription = () => {
+    const [finalText, setFinalText] = useState<string>("");
+    const [partialText, setPartialText] = useState<string>("");
+    const [isConnected, setIsConnected] = useState(false);
+    const [error, setError] = useState<string | null>(null);
+    const eventSourceRef = useRef<EventSource | null>(null);
+    
     const connectToSSE = () => {
-      // Close any existing connection
-      if (eventSourceRef.current) {
-        eventSourceRef.current.close();
-      }
+      
+      // Close any existing connections
+      disconnectFromSSE();
 
-      // Create a new EventSource with absolute URL
+      // Create a new EventSource
       const eventSource = new EventSource("http://localhost:4000/api/screenpipe/transcription");
       eventSourceRef.current = eventSource;
 
@@ -37,7 +34,7 @@ const LiveTranscription = () => {
       eventSource.addEventListener("transcription", (event: MessageEvent<string>) => {
         try {
           const data: TranscriptionData = JSON.parse(event.data);
-          
+          console.log(data);
           // If it's a final transcription, append it to final text and clear partial
           if (data.isFinal) {
             console.log(partialText, finalText)
@@ -66,50 +63,45 @@ const LiveTranscription = () => {
           setError("Connection error");
         }
       });
+    }
 
-      // Handle general errors
-      eventSource.onerror = (err) => {
-        console.error("EventSource encountered an error:", err);
+    const disconnectFromSSE = () => {
+      console.log("Inside of disconnectFromSSE");
+      if(eventSourceRef.current) {
         setIsConnected(false);
-        setError("Connection error. Attempting to reconnect...");
-        
-        // Attempt to reconnect after a delay
-        eventSource.close();
-        setTimeout(connectToSSE, 3000);
-      };
-    };
-
-    // Start the connection
-    connectToSSE();
-
-    // Clean up the connection when the component unmounts
-    return () => {
-      if (eventSourceRef.current) {
+        console.log(setIsConnected);
         eventSourceRef.current.close();
       }
-    };
-  }, []);
+    }
 
-  // Combine final and partial text for display
-  const displayText = finalText + partialText;
+    // Combine final and partial text for display
+    const displayText = finalText + partialText;
 
-  return (
-    <div className="p-4">
-      <h1 className="text-2xl font-bold mb-4">Live Transcription</h1>
-      
-      {/* Connection status */}
-      <div className="mb-4">
-        <span className={`inline-block w-3 h-3 rounded-full mr-2 ${isConnected ? 'bg-green-500' : 'bg-red-500'}`}></span>
-        {isConnected ? 'Connected' : 'Disconnected'}
-        {error && <p className="text-red-500 mt-1">{error}</p>}
+    return (
+      <div className="p-4">
+        <h1 className="text-2xl font-bold mb-4">Live Transcription</h1>
+
+        {/* Connection status */}
+        <div className="mb-4">
+          <span className={`inline-block w-3 h-3 rounded-full mr-2 ${isConnected ? 'bg-green-500' : 'bg-red-500'}`}></span>
+          {isConnected ? 'Connected' : 'Disconnected'}
+          {error && <p className="text-red-500 mt-1">{error}</p>}
+        </div>
+
+        {/* Start Audio Transcription */}
+        {
+          isConnected ?
+          <button className="bg-amber-600" onClick={() => disconnectFromSSE()}>End Audio</button>
+          :
+          <button className="bg-amber-600" onClick={() => connectToSSE()}>Start Audio</button>
+        }
+        
+        {/* Transcription text */}
+        <div className="p-4 bg-gray-50 rounded-lg min-h-40 whitespace-pre-wrap">
+          {displayText || "Waiting for transcription..."}
+        </div>
       </div>
-      
-      {/* Transcription text */}
-      <div className="p-4 bg-gray-50 rounded-lg min-h-40 whitespace-pre-wrap">
-        {displayText || "Waiting for transcription..."}
-      </div>
-    </div>
-  );
-};
+    );
+  };
 
-export default LiveTranscription;
+  export default LiveTranscription;
