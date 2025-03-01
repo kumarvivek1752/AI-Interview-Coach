@@ -1,67 +1,115 @@
-export default function Home() {
+"use client";
+import { useState, useEffect, useRef } from "react";
+
+interface TranscriptionData {
+  device: string;
+  isFinal: boolean;
+  text: string;
+}
+
+const LiveTranscription = () => {
+  const [finalText, setFinalText] = useState<string>("");
+  const [partialText, setPartialText] = useState<string>("");
+  const [isConnected, setIsConnected] = useState(false);
+  const [error, setError] = useState<string | null>(null);
+  const eventSourceRef = useRef<EventSource | null>(null);
+
+  useEffect(() => {
+    // Initialize the connection
+    const connectToSSE = () => {
+      // Close any existing connection
+      if (eventSourceRef.current) {
+        eventSourceRef.current.close();
+      }
+
+      // Create a new EventSource with absolute URL
+      const eventSource = new EventSource("http://localhost:4000/api/screenpipe/transcription");
+      eventSourceRef.current = eventSource;
+
+      // Listen for connection open
+      eventSource.addEventListener("connected", () => {
+        console.log("SSE connection established");
+        setIsConnected(true);
+        setError(null);
+      });
+
+      // Listen for transcription events
+      eventSource.addEventListener("transcription", (event: MessageEvent<string>) => {
+        try {
+          const data: TranscriptionData = JSON.parse(event.data);
+          
+          // If it's a final transcription, append it to final text and clear partial
+          if (data.isFinal) {
+            console.log(partialText, finalText)
+            setFinalText(prev => prev + data.text + " ");
+            setPartialText("");
+          } 
+          // If it's partial, just update the partial text
+          else {
+            setPartialText(data.text);
+          }
+        } catch (err) {
+          console.error("Error parsing event data:", err);
+        }
+      });
+
+      // Listen for error events
+      eventSource.addEventListener("error", (event: MessageEvent<string>) => {
+        try {
+          if (event.data) {
+            const errorData = JSON.parse(event.data);
+            setError(errorData.error || "Unknown error");
+          } else {
+            setError("Connection error");
+          }
+        } catch (err) {
+          setError("Connection error");
+        }
+      });
+
+      // Handle general errors
+      eventSource.onerror = (err) => {
+        console.error("EventSource encountered an error:", err);
+        setIsConnected(false);
+        setError("Connection error. Attempting to reconnect...");
+        
+        // Attempt to reconnect after a delay
+        eventSource.close();
+        setTimeout(connectToSSE, 3000);
+      };
+    };
+
+    // Start the connection
+    connectToSSE();
+
+    // Clean up the connection when the component unmounts
+    return () => {
+      if (eventSourceRef.current) {
+        eventSourceRef.current.close();
+      }
+    };
+  }, []);
+
+  // Combine final and partial text for display
+  const displayText = finalText + partialText;
+
   return (
-    <div className="grid grid-rows-[20px_1fr_20px] items-center justify-items-center min-h-screen p-8 pb-20 gap-16 sm:p-20 font-[family-name:var(--font-geist-sans)]">
-      <main className="flex flex-col gap-8 row-start-2 items-center sm:items-start">
-
-        <ol className="list-inside list-decimal text-sm text-center sm:text-left font-[family-name:var(--font-geist-mono)]">
-          <li className="mb-2">
-            Get started by editing{" "}
-            <code className="bg-black/[.05] dark:bg-white/[.06] px-1 py-0.5 rounded font-semibold">
-              src/app/page.tsx
-            </code>
-            .
-          </li>
-          <li>Save and see your changes instantly.</li>
-        </ol>
-
-        <div className="flex gap-4 items-center flex-col sm:flex-row">
-          <a
-            className="rounded-full border border-solid border-transparent transition-colors flex items-center justify-center bg-foreground text-background gap-2 hover:bg-[#383838] dark:hover:bg-[#ccc] text-sm sm:text-base h-10 sm:h-12 px-4 sm:px-5"
-            href="https://vercel.com/new?utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-            target="_blank"
-            rel="noopener noreferrer"
-          >
-
-            Deploy now
-          </a>
-          <a
-            className="rounded-full border border-solid border-black/[.08] dark:border-white/[.145] transition-colors flex items-center justify-center hover:bg-[#f2f2f2] dark:hover:bg-[#1a1a1a] hover:border-transparent text-sm sm:text-base h-10 sm:h-12 px-4 sm:px-5 sm:min-w-44"
-            href="https://nextjs.org/docs?utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-            target="_blank"
-            rel="noopener noreferrer"
-          >
-            Read our docs
-          </a>
-        </div>
-      </main>
-      <footer className="row-start-3 flex gap-6 flex-wrap items-center justify-center">
-        <a
-          className="flex items-center gap-2 hover:underline hover:underline-offset-4"
-          href="https://nextjs.org/learn?utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-          target="_blank"
-          rel="noopener noreferrer"
-        >
-
-          Learn
-        </a>
-        <a
-          className="flex items-center gap-2 hover:underline hover:underline-offset-4"
-          href="https://vercel.com/templates?framework=next.js&utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-          target="_blank"
-          rel="noopener noreferrer"
-        >
- 
-          Examples
-        </a>
-        <a
-          className="flex items-center gap-2 hover:underline hover:underline-offset-4"
-          href="https://nextjs.org?utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-          target="_blank"
-          rel="noopener noreferrer"
-        >
-          Go to nextjs.org →
-        </a>
-      </footer>
+    <div className="p-4">
+      <h1 className="text-2xl font-bold mb-4">Live Transcription</h1>
+      
+      {/* Connection status */}
+      <div className="mb-4">
+        <span className={`inline-block w-3 h-3 rounded-full mr-2 ${isConnected ? 'bg-green-500' : 'bg-red-500'}`}></span>
+        {isConnected ? 'Connected' : 'Disconnected'}
+        {error && <p className="text-red-500 mt-1">{error}</p>}
+      </div>
+      
+      {/* Transcription text */}
+      <div className="p-4 bg-gray-50 rounded-lg min-h-40 whitespace-pre-wrap">
+        {displayText || "Waiting for transcription..."}
+      </div>
     </div>
   );
-}
+};
+
+export default LiveTranscription;

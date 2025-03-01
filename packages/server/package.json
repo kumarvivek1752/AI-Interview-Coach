@@ -12,6 +12,7 @@
   "dependencies": {
     "@screenpipe/browser": "^0.1.36",
     "@screenpipe/js": "^1.0.17",
+    "cors": "^2.8.5",
     "express": "^4.21.2"
   },
   "type": "module"
