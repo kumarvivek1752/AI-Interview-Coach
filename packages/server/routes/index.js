@@ -1,5 +1,5 @@
 import { Router } from "express";
-import transcriptionRouter from "./audio.js";
+import transcriptionRouter from "./transcription.js";
 import audioGenerationRouter from "./audioGeneration.js"
 // import queryRouter from "./query.js";
 
