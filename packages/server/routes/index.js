@@ -1,10 +1,12 @@
 import { Router } from "express";
-import audioRouter from "./audio.js";
+import transcriptionRouter from "./audio.js";
+import audioGenerationRouter from "./audioGeneration.js"
 // import queryRouter from "./query.js";
 
 const router = Router();
 
-router.use(audioRouter);
+router.use(transcriptionRouter);
+router.use(audioGenerationRouter)
 // router.use(queryRouter);
 
 export default router;
