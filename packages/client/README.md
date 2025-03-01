@@ -1,36 +1,36 @@
-This is a [Next.js](https://nextjs.org) project bootstrapped with [`create-next-app`](https://nextjs.org/docs/app/api-reference/cli/create-next-app).
+# screenpipe playground
 
-## Getting Started
+a flexible playground for displaying, testing, and exploring components with their associated code, documentation, and ai prompts.
 
-First, run the development server:
+<!-- <img width="1312" alt="screenshot of component playground" src="https://github.com/user-attachments/assets/3e5abd07-0a3c-4c3b-8351-5107beb4fb10"> -->
 
-```bash
-npm run dev
-# or
-yarn dev
-# or
-pnpm dev
-# or
-bun dev
-```
+## features
 
-Open [http://localhost:3000](http://localhost:3000) with your browser to see the result.
+- **interactive component display**: view rendered components in action
+- **code inspection**: examine the full source code of each component
+- **raw output**: see the raw api responses and data
+- **ai prompt visibility**: view the prompts and context used to generate components
+- **collapsible interface**: toggle component visibility for a cleaner workspace
 
-You can start editing the page by modifying `app/page.tsx`. The page auto-updates as you edit the file.
+## usage
 
-This project uses [`next/font`](https://nextjs.org/docs/app/building-your-application/optimizing/fonts) to automatically optimize and load [Geist](https://vercel.com/font), a new font family for Vercel.
+the playground allows you to:
 
-## Learn More
+1. view rendered components in their intended state
+2. inspect the raw output from api calls
+3. study the complete component code
+4. examine the ai prompts and context used to generate components
 
-To learn more about Next.js, take a look at the following resources:
+## component structure
 
-- [Next.js Documentation](https://nextjs.org/docs) - learn about Next.js features and API.
-- [Learn Next.js](https://nextjs.org/learn) - an interactive Next.js tutorial.
+each playground card includes:
+- component title and collapsible interface
+- tabs for different views (rendered output, raw output, code, ai prompt)
+- copy functionality for sharing prompts and context
 
-You can check out [the Next.js GitHub repository](https://github.com/vercel/next.js) - your feedback and contributions are welcome!
+## getting started
 
-## Deploy on Vercel
+1. install this pipe from UI and play with it
+2. follow docs to create your pipe (it will create this app) (https://docs.screenpi.pe/docs/plugins)
+3. modify code from ready-to-use-examples directory
 
-The easiest way to deploy your Next.js app is to use the [Vercel Platform](https://vercel.com/new?utm_medium=default-template&filter=next.js&utm_source=create-next-app&utm_campaign=create-next-app-readme) from the creators of Next.js.
-
-Check out our [Next.js deployment documentation](https://nextjs.org/docs/app/building-your-application/deploying) for more details.
