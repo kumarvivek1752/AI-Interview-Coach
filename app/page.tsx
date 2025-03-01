@@ -10,13 +10,11 @@ import { Inter } from "next/font/google";
 import { useEffect, useState } from "react";
 import { RealtimeAudio } from "@/components/screenpipe/realtime-audio";
 import { LastAudioTranscription } from "@/components/ready-to-use-examples/last-audio-transcription";
-import AudioGeneration from "@/components/whisper/audio-generation"
 export default function Page() {
   return (
     <SettingsProvider>
       <RealtimeAudio />
       <LastAudioTranscription />
-      <AudioGeneration />
     </SettingsProvider>
   );
 }

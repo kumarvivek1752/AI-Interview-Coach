@@ -3,8 +3,14 @@ import OpenAI from "openai";
 
 const openai = new OpenAI({ apiKey: process.env.OPENAI_API_KEY });
 
-export async function GET() {
+export async function POST(req: Request) {
   try {
+    const { content } = await req.json();
+
+    if(!content) {
+      return NextResponse.json({error: "Content is required"}, {status: 400});
+    }
+
     const response = await openai.chat.completions.create({
       model: "gpt-4o-audio-preview",
       modalities: ["text", "audio"],
@@ -12,7 +18,7 @@ export async function GET() {
       messages: [
         {
           role: "user",
-          content: "Is a golden retriever a good family dog?",
+          content: content,
         },
       ],
       store: true,

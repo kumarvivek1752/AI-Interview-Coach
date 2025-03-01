@@ -14,6 +14,7 @@ export function RealtimeAudio({ onDataChange }: { onDataChange?: (data: any, err
   const [history, setHistory] = useState('');
   const historyRef = useRef(history);
   const streamRef = useRef<any>(null);
+  const [audioSrc, setAudioSrc] = useState<string>("");
 
   // Update ref when history changes
   useEffect(() => {
@@ -65,6 +66,7 @@ export function RealtimeAudio({ onDataChange }: { onDataChange?: (data: any, err
           };
           
           setTranscription(chunk);
+          generateAudio(chunk.transcription);
           const newHistory = historyRef.current + ' ' + chunk.transcription;
           setHistory(newHistory);
           
@@ -112,6 +114,29 @@ export function RealtimeAudio({ onDataChange }: { onDataChange?: (data: any, err
       stopStreaming();
     };
   }, []);
+
+  const generateAudio = async (content: string) => {
+    try {
+      const response = await fetch("/api/whisper", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({ content }),
+      });
+  
+      if (!response.ok) {
+        throw new Error("Failed to generate audio");
+      }
+  
+      const audioBlob = await response.blob();
+      const audioUrl = URL.createObjectURL(audioBlob);
+      setAudioSrc(audioUrl);
+    } catch (error) {
+      console.error("Error generating audio:", error);
+      setError("Error generating audio");
+    }
+  };
 
   const renderTranscriptionContent = (transcription: TranscriptionChunk) => {
     return (
@@ -195,6 +220,17 @@ export function RealtimeAudio({ onDataChange }: { onDataChange?: (data: any, err
           {isStreaming ? 'streaming' : 'stopped'}
         </span>
       </div>
+
+      <div>
+      {error && <p>{error}</p>}
+      {audioSrc ? (
+        <audio controls src={audioSrc} autoPlay>
+          Your browser does not support the audio element.
+        </audio>
+      ) : (
+        <p>Loading audio...</p>
+      )}
+    </div>
     </div>
   );
 } 
