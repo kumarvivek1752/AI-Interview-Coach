@@ -70,8 +70,7 @@ export function RealtimeAudio({ onDataChange }: { onDataChange?: (data: any, err
           setTranscription(chunk);
           transcriptionRef.current += " " + chunk.transcription;
 
-          const newHistory = historyRef.current + 'You: ' + chunk.transcription + "\n";
-          setHistory(newHistory);
+          
           
           // Pass the raw data to the parent component for display in the raw output tab
           if (onDataChange) {
@@ -90,6 +89,8 @@ export function RealtimeAudio({ onDataChange }: { onDataChange?: (data: any, err
           debounceTimeoutRef.current = setTimeout(() => {
             console.log("Inside of debouncer, calling generate audio with: ", transcriptionRef.current);
             generateAudio(transcriptionRef.current);
+            const newHistory = historyRef.current + 'You: ' + transcriptionRef.current + "\n";
+            setHistory(newHistory);
             transcriptionRef.current = "";
             debounceTimeoutRef.current = null;
           }, 5000); 
