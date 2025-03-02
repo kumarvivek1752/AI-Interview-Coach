@@ -24,21 +24,20 @@ export async function POST(req: Request) {
       store: true,
     });
 
+    const audioTranscription = response.choices[0].message.audio?.transcript
     const audioDataBase64 = response.choices[0]?.message?.audio?.data;
-    if (!audioDataBase64) {
-      return NextResponse.json(
-        { error: "Audio data not available" },
-        { status: 500 }
-      );
-    }
-    const audioBuffer = Buffer.from(audioDataBase64, "base64");
+    // if (!audioDataBase64) {
+    //   return NextResponse.json(
+    //     { error: "Audio data not available" },
+    //     { status: 500 }
+    //   );
+    // }
+    // const audioBuffer = Buffer.from(audioDataBase64, "base64");
 
-    return new NextResponse(audioBuffer, {
-      headers: {
-        "Content-Type": "audio/wav",
-        "Content-Length": audioBuffer.length.toString(),
-      },
-    });
+    return NextResponse.json({
+        audio: audioDataBase64, 
+        transcription: audioTranscription,
+      });
   } catch (err) {
     console.error("Error generating audio:", err);
     return NextResponse.json(
