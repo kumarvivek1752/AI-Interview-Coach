@@ -6,9 +6,10 @@ const openai = new OpenAI({ apiKey: process.env.OPENAI_API_KEY });
 export async function POST(req: Request) {
   console.log("Inside of whisper endpoint")
   try {
-    const { content } = await req.json();
+    const { transcription, history } = await req.json();
+    console.log("✅ THIS IS THE HISTORY I GOT ON THE SERVER ", history);
 
-    if (!content) {
+    if (!transcription) {
       return NextResponse.json(
         { error: "Content is required" },
         { status: 400 }
@@ -21,7 +22,8 @@ export async function POST(req: Request) {
       audio: { voice: "alloy", format: "wav" },
       messages: [
         { role: "system", content: "You are a professional technical recruiter that is giving a mock interview. Your goal is to help the person improve their interviewing skills by analyzing their speech. A good method to enforce into them is the STAR method or any other popular response methods you can think of. If they use filler words such as uh and um too much, point it out and tell them. If their response is bad, tell them how they shouldve have responded." },
-        { role: "user", content: content },
+        { role: "user", content: `Conversation History: ${history}`},
+        { role: "user", content: `Current conversation response or question: ${transcription}` },
       ],
       store: true,
     });

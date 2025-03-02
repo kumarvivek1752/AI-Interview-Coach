@@ -88,9 +88,11 @@ export function RealtimeAudio({ onDataChange }: { onDataChange?: (data: any, err
           }
           debounceTimeoutRef.current = setTimeout(() => {
             console.log("Inside of debouncer, calling generate audio with: ", transcriptionRef.current);
-            generateAudio(transcriptionRef.current);
             const newHistory = historyRef.current + 'You: ' + transcriptionRef.current + "\n";
             setHistory(newHistory);
+            historyRef.current = newHistory;
+
+            generateAudio();
             transcriptionRef.current = "";
             debounceTimeoutRef.current = null;
           }, 5000); 
@@ -129,15 +131,19 @@ export function RealtimeAudio({ onDataChange }: { onDataChange?: (data: any, err
     };
   }, []);
 
-  const generateAudio = async (content: string) => {
+  const generateAudio = async () => {
     console.log("Inside of generate audio")
     try {
+      console.log("✅ SENDING THIS HISTORY OVER ", history);
       const response = await fetch("/api/whisper", {
         method: "POST",
         headers: {
           "Content-Type": "application/json",
         },
-        body: JSON.stringify({ content }),
+        body: JSON.stringify({ 
+          transcription: transcriptionRef.current,
+          history: historyRef.current
+        }),
       });
   
       if (!response.ok) {
