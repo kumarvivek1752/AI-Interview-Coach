@@ -189,7 +189,6 @@ const Camera: React.FC = () => {
           if (poseDetection.landmarks) {
             drawPoseLandmarkeres(poseDetection.landmarks);
           }
-          console.log("🤪Pose Detection: ", poseDetection);
         }
       }
       animationFrameId = requestAnimationFrame(detect);
@@ -231,8 +230,10 @@ const Camera: React.FC = () => {
   return (
     <>
       <h1>
-        Hand Detected: {handPresence ? "Yes" : "No"}; Face Detected:{" "}
-        {facePresence ? "Yes" : "No"}
+        Hand Detected: {handPresence ? "Yes" : "No"}; 
+        Face Detected:{" "} {facePresence ? "Yes" : "No"};
+        Pose Detected:{" "} {posePresence ? "Yes" : "No"};
+
       </h1>
       <div style={{ position: "relative", width: "600px", height: "480px" }}>
         <video
