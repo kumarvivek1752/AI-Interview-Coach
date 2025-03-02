@@ -14,7 +14,9 @@ export function RealtimeAudio({ onDataChange }: { onDataChange?: (data: any, err
   const [history, setHistory] = useState('');
   const historyRef = useRef(history);
   const streamRef = useRef<any>(null);
+  const transcriptionRef = useRef("");
   const [audioSrc, setAudioSrc] = useState<string>("");
+  const debounceTimeoutRef = useRef<NodeJS.Timeout | null>(null);
 
   // Update ref when history changes
   useEffect(() => {
@@ -66,8 +68,7 @@ export function RealtimeAudio({ onDataChange }: { onDataChange?: (data: any, err
           };
           
           setTranscription(chunk);
-          generateAudio(chunk.transcription);
-          // const newHistory = historyRef.current + ' ' + chunk.transcription;
+          transcriptionRef.current += " " + chunk.transcription;
 
           const newHistory = historyRef.current + 'You: ' + chunk.transcription + "\n";
           setHistory(newHistory);
@@ -82,6 +83,16 @@ export function RealtimeAudio({ onDataChange }: { onDataChange?: (data: any, err
             device: chunk.device,
             isFinal: chunk.is_final
           });
+
+          if (debounceTimeoutRef.current) {
+            clearTimeout(debounceTimeoutRef.current);
+          }
+          debounceTimeoutRef.current = setTimeout(() => {
+            console.log("Inside of debouncer, calling generate audio with: ", transcriptionRef.current);
+            generateAudio(transcriptionRef.current);
+            transcriptionRef.current = "";
+            debounceTimeoutRef.current = null;
+          }, 5000); 
         }
       }
       
