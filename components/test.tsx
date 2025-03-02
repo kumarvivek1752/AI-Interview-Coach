@@ -1,9 +1,8 @@
 import React, { useEffect, useRef, useState } from "react";
 import {
-  FilesetResolver,
-  HandLandmarker,
   FaceDetector,
-  HandLandmarkerResult,
+  HandLandmarker,
+  FilesetResolver,
 } from "@mediapipe/tasks-vision";
 
 interface Landmark {
@@ -16,12 +15,34 @@ const Camera: React.FC = () => {
   const videoRef = useRef<HTMLVideoElement | null>(null);
   const canvasRef = useRef<HTMLCanvasElement | null>(null);
   const [handPresence, setHandPresence] = useState<boolean | null>(null);
-  const [facePresence, setFacePresence] = useState<boolean | null>(null);
+
+  // Local instances for detectors
+  let handLandmarkerInstance: HandLandmarker | undefined;
+  let faceDetectorInstance: FaceDetector | undefined;
+  let animationFrameId: number | undefined;
 
   useEffect(() => {
-    let handLandmarkerInstance: HandLandmarker | undefined;
-    let faceLandmarkerInstance: FaceDetector | undefined;
-    let animationFrameId: number | undefined;
+    const initializeFaceDetection = async (): Promise<void> => {
+      try {
+        const vision = await FilesetResolver.forVisionTasks(
+          "https://cdn.jsdelivr.net/npm/@mediapipe/tasks-vision@latest/wasm"
+        );
+        faceDetectorInstance = await FaceDetector.createFromOptions(vision, {
+          baseOptions: {
+            modelAssetPath:
+              "https://storage.googleapis.com/mediapipe-models/face_detector/blaze_face_short_range/float16/latest/blaze_face_short_range.tflite",
+          },
+          runningMode: "VIDEO",
+        });
+
+        console.log(
+          "Inside of initialize Face Detection: ",
+          faceDetectorInstance
+        );
+      } catch (error) {
+        console.error("Error initializing face detection:", error);
+      }
+    };
 
     const initializeHandDetection = async (): Promise<void> => {
       try {
@@ -44,30 +65,13 @@ const Camera: React.FC = () => {
       }
     };
 
-    const initializeFaceDetection = async (): Promise<void> => {
-      try {
-        const vision = await FilesetResolver.forVisionTasks(
-          "https://cdn.jsdelivr.net/npm/@mediapipe/tasks-vision@latest/wasm"
-        );
-        faceLandmarkerInstance = await FaceDetector.createFromOptions(vision, {
-          baseOptions: {
-            modelAssetPath:
-              "https://storage.googleapis.com/mediapipe-models/face_detector/blaze_face_short_range/float16/latest/blaze_face_short_range.tflite",
-          },
-          runningMode: "VIDEO",
-        });
-      } catch (error) {
-        console.error("Error initializing face detection:", error);
-      }
-    };
-
-    // Draw hand landmarks (white circles)
     const drawHandLandmarks = (landmarksArray: Landmark[][]): void => {
       const canvas = canvasRef.current;
       if (!canvas) return;
       const ctx = canvas.getContext("2d");
       if (!ctx) return;
 
+      // Draw hand landmarks (as white circles)
       landmarksArray.forEach((landmarks) => {
         landmarks.forEach((landmark) => {
           const x = landmark.x * canvas.width;
@@ -80,41 +84,54 @@ const Camera: React.FC = () => {
       });
     };
 
-    const drawFaceLandmarks = (faceDetections: any): void => {
+    const drawFaceDetections = (detections: any): void => {
       const canvas = canvasRef.current;
       if (!canvas) return;
       const ctx = canvas.getContext("2d");
       if (!ctx) return;
-
-      faceDetections.detections.forEach((detection: any) => {
-        if (detection.keypoints) {
-          detection.keypoints.forEach((kp: any) => {
-            const x = kp.x * canvas.width;
-            const y = kp.y * canvas.height;
-            ctx.beginPath();
-            ctx.arc(x, y, 5, 0, 2 * Math.PI);
-            ctx.fillStyle = "blue";
-            ctx.fill();
-          });
-        }
+      // Draw bounding boxes for each face detection in blue
+      detections.detections?.forEach((detection: any) => {
+        const { xCenter, yCenter, width, height } = detection.boundingBox;
+        const canvasWidth = canvas.width;
+        const canvasHeight = canvas.height;
+        // Convert normalized center and dimensions to top-left coordinate and size
+        const x = (xCenter - width / 2) * canvasWidth;
+        const y = (yCenter - height / 2) * canvasHeight;
+        const w = width * canvasWidth;
+        const h = height * canvasHeight;
+        ctx.strokeStyle = "blue";
+        ctx.lineWidth = 2;
+        ctx.strokeRect(x, y, w, h);
       });
     };
 
-    // Combined detection and drawing function
-    const detect = (): void => {
+    const detectBoth = (): void => {
       if (
         videoRef.current &&
         videoRef.current.readyState >= 2 &&
         canvasRef.current
       ) {
         const currentTime = performance.now();
-        const canvas = canvasRef.current;
-        const ctx = canvas.getContext("2d");
+
+        // Clear the canvas once per frame
+        const ctx = canvasRef.current.getContext("2d");
         if (ctx) {
-          ctx.clearRect(0, 0, canvas.width, canvas.height);
-          ctx.drawImage(videoRef.current, 0, 0, canvas.width, canvas.height);
+          ctx.clearRect(
+            0,
+            0,
+            canvasRef.current.width,
+            canvasRef.current.height
+          );
+          ctx.drawImage(
+            videoRef.current,
+            0,
+            0,
+            canvasRef.current.width,
+            canvasRef.current.height
+          );
         }
 
+        // Run hand detection if initialized
         if (handLandmarkerInstance) {
           const handDetections = handLandmarkerInstance.detectForVideo(
             videoRef.current,
@@ -126,20 +143,19 @@ const Camera: React.FC = () => {
           }
         }
 
-        if (faceLandmarkerInstance) {
-          const faceDetections = faceLandmarkerInstance.detectForVideo(
+        // Run face detection if initialized
+        if (faceDetectorInstance) {
+          const faceDetections = faceDetectorInstance.detectForVideo(
             videoRef.current,
             currentTime
           );
-          setFacePresence(
-            faceDetections.detections && faceDetections.detections.length > 0
-          );
-          if (faceDetections.detections) {
-            drawFaceLandmarks(faceDetections);
+          console.log("Face detections: ", faceDetections);
+          if (faceDetections) {
+            drawFaceDetections(faceDetections);
           }
         }
       }
-      animationFrameId = requestAnimationFrame(detect);
+      animationFrameId = requestAnimationFrame(detectBoth);
     };
 
     const startWebcam = async (): Promise<void> => {
@@ -149,9 +165,9 @@ const Camera: React.FC = () => {
         });
         if (videoRef.current) {
           videoRef.current.srcObject = stream;
-          await initializeHandDetection();
           await initializeFaceDetection();
-          detect();
+          await initializeHandDetection();
+          detectBoth();
         }
       } catch (error) {
         console.error("Error accessing webcam:", error);
@@ -177,8 +193,7 @@ const Camera: React.FC = () => {
   return (
     <>
       <h1>
-        Hand Detected: {handPresence ? "Yes" : "No"}; Face Detected:{" "}
-        {facePresence ? "Yes" : "No"}
+        Hand Detected: {handPresence ? "Yes" : "No"} (Face boxes drawn in blue)
       </h1>
       <div style={{ position: "relative", width: "600px", height: "480px" }}>
         <video
