@@ -67,7 +67,9 @@ export function RealtimeAudio({ onDataChange }: { onDataChange?: (data: any, err
           
           setTranscription(chunk);
           generateAudio(chunk.transcription);
-          const newHistory = historyRef.current + ' ' + chunk.transcription;
+          // const newHistory = historyRef.current + ' ' + chunk.transcription;
+
+          const newHistory = historyRef.current + 'You: ' + chunk.transcription + "\n";
           setHistory(newHistory);
           
           // Pass the raw data to the parent component for display in the raw output tab
@@ -116,6 +118,7 @@ export function RealtimeAudio({ onDataChange }: { onDataChange?: (data: any, err
   }, []);
 
   const generateAudio = async (content: string) => {
+    console.log("Inside of generate audio")
     try {
       const response = await fetch("/api/whisper", {
         method: "POST",
@@ -142,6 +145,8 @@ export function RealtimeAudio({ onDataChange }: { onDataChange?: (data: any, err
       const audioUrl = URL.createObjectURL(audioBlob);
 
       console.log("Transcription:", data.transcription);
+      const newHistory = historyRef.current + 'Bot: ' + data.transcription + "\n";
+      setHistory(newHistory);
       
       setAudioSrc(audioUrl);
     } catch (error) {
