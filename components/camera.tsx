@@ -3,6 +3,7 @@ import {
   FilesetResolver,
   HandLandmarker,
   FaceDetector,
+  PoseLandmarker,
   HandLandmarkerResult,
 } from "@mediapipe/tasks-vision";
 
@@ -17,10 +18,12 @@ const Camera: React.FC = () => {
   const canvasRef = useRef<HTMLCanvasElement | null>(null);
   const [handPresence, setHandPresence] = useState<boolean | null>(null);
   const [facePresence, setFacePresence] = useState<boolean | null>(null);
+  const [posePresence, setPosePresence] = useState<boolean | null>(null);
 
   useEffect(() => {
     let handLandmarkerInstance: HandLandmarker | undefined;
     let faceLandmarkerInstance: FaceDetector | undefined;
+    let poseLandmarkerInstance: PoseLandmarker | undefined;
     let animationFrameId: number | undefined;
 
     const initializeHandDetection = async (): Promise<void> => {
@@ -61,7 +64,26 @@ const Camera: React.FC = () => {
       }
     };
 
-    // Draw hand landmarks (white circles)
+    const initializePoseDetection = async (): Promise<void> => {
+      try {
+        const vision = await FilesetResolver.forVisionTasks(
+          "https://cdn.jsdelivr.net/npm/@mediapipe/tasks-vision@latest/wasm"
+        );
+        poseLandmarkerInstance = await PoseLandmarker.createFromOptions(
+          vision,
+          {
+            baseOptions: {
+              modelAssetPath:
+                "https://storage.googleapis.com/mediapipe-models/pose_landmarker/pose_landmarker_lite/float16/latest/pose_landmarker_lite.task",
+            },
+            runningMode: "VIDEO",
+          }
+        );
+      } catch (error) {
+        console.error("Error initializing pose detection:", error);
+      }
+    };
+
     const drawHandLandmarks = (landmarksArray: Landmark[][]): void => {
       const canvas = canvasRef.current;
       if (!canvas) return;
@@ -97,6 +119,23 @@ const Camera: React.FC = () => {
             ctx.fill();
           });
         }
+      });
+    };
+
+    const drawPoseLandmarkeres = (poseLandmarks: Landmark[][]): void => {
+      const canvas = canvasRef.current;
+      if (!canvas) return;
+      const ctx = canvas.getContext("2d");
+      if (!ctx) return;
+      poseLandmarks.forEach((landmarks) => {
+        landmarks.forEach((landmark) => {
+          const x = landmark.x * canvas.width;
+          const y = landmark.y * canvas.height;
+          ctx.beginPath();
+          ctx.arc(x, y, 5, 0, 2 * Math.PI);
+          ctx.fillStyle = "green"; // green for pose landmarks
+          ctx.fill();
+        });
       });
     };
 
@@ -138,6 +177,20 @@ const Camera: React.FC = () => {
             drawFaceLandmarks(faceDetections);
           }
         }
+
+        if (poseLandmarkerInstance) {
+          const poseDetection = poseLandmarkerInstance.detectForVideo(
+            videoRef.current,
+            currentTime
+          );
+          setPosePresence(
+            poseDetection.landmarks && poseDetection.landmarks.length > 0
+          );
+          if (poseDetection.landmarks) {
+            drawPoseLandmarkeres(poseDetection.landmarks);
+          }
+          console.log("🤪Pose Detection: ", poseDetection);
+        }
       }
       animationFrameId = requestAnimationFrame(detect);
     };
@@ -151,6 +204,7 @@ const Camera: React.FC = () => {
           videoRef.current.srcObject = stream;
           await initializeHandDetection();
           await initializeFaceDetection();
+          await initializePoseDetection();
           detect();
         }
       } catch (error) {
