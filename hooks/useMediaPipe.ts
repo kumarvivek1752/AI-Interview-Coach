@@ -25,6 +25,7 @@ export const useMediapipe = (
   // Analytics states (counters, durations)
   const [handDetectionCounter, setHandDetectionCounter] = useState(0);
   const [handDetectionDuration, setHandDetectionDuration] = useState(0);
+  const [notFacingCounter, setNotFacingCounter] = useState(0);
   const [notFacingDuration, setNotFacingDuration] = useState(0);
   const [badPostureDetectionCounter, setBadPostureDetectionCounter] = useState(0);
   const [badPostureDuration, setBadPostureDuration] = useState(0);
@@ -49,6 +50,7 @@ export const useMediapipe = (
       updateMetrics({
         handDetectionCounter,
         handDetectionDuration,
+        notFacingCounter,
         notFacingDuration,
         badPostureDetectionCounter,
         badPostureDuration
@@ -60,6 +62,7 @@ export const useMediapipe = (
     updateMetrics,
     handDetectionCounter, 
     handDetectionDuration,
+    notFacingCounter,
     notFacingDuration,
     badPostureDetectionCounter,
     badPostureDuration
@@ -136,6 +139,7 @@ export const useMediapipe = (
             if (!lookingForward) {
               if (notFacingStartTimeRef.current === null) {
                 notFacingStartTimeRef.current = currentTime;
+                setNotFacingCounter((prev) => prev + 1);
               }
             } else {
               if (notFacingStartTimeRef.current !== null) {
@@ -199,6 +203,7 @@ export const useMediapipe = (
     posePresence,
     handDetectionCounter,
     handDetectionDuration,
+    notFacingCounter,
     notFacingDuration,
     badPostureDetectionCounter,
     badPostureDuration,

@@ -5,6 +5,7 @@ import React, { createContext, useContext, useState, ReactNode } from "react";
 interface Metrics {
   handDetectionCounter: number;
   handDetectionDuration: number;
+  notFacingCounter: number;
   notFacingDuration: number;
   badPostureDetectionCounter: number;
   badPostureDuration: number;
@@ -18,6 +19,7 @@ interface MetricsContextType {
 const defaultMetrics: Metrics = {
   handDetectionCounter: 0,
   handDetectionDuration: 0,
+  notFacingCounter: 0,
   notFacingDuration: 0,
   badPostureDetectionCounter: 0,
   badPostureDuration: 0,
