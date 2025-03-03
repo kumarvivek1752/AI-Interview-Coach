@@ -38,3 +38,10 @@ export interface Settings {
   deduplicationEnabled: boolean;
   screenpipeAppSettings: ScreenpipeAppSettings;
 }
+
+export interface Landmark {
+  x: number;
+  y: number;
+  z: number;
+  visibility: number;
+}
