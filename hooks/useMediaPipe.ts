@@ -65,7 +65,7 @@ export const useMediapipe = (
     notFacingCounter,
     notFacingDuration,
     badPostureDetectionCounter,
-    badPostureDuration
+    badPostureDuration,
   ]);
 
   useEffect(() => {
@@ -207,5 +207,8 @@ export const useMediapipe = (
     notFacingDuration,
     badPostureDetectionCounter,
     badPostureDuration,
+    isHandOnScreenRef,
+    notFacingRef,
+    hasBadPostureRef
   };
 };

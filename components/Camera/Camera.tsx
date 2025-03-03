@@ -25,6 +25,9 @@ const Camera: React.FC = () => {
     notFacingDuration,
     badPostureDetectionCounter,
     badPostureDuration,
+    isHandOnScreenRef,
+    notFacingRef,
+    hasBadPostureRef
   } = useMediapipe(videoRef, canvasRef, overlayEnabled);
 
   return (
@@ -78,10 +81,10 @@ const Camera: React.FC = () => {
                 <div className="flex justify-between items-center">
                   <span className="text-muted-foreground">Status:</span>
                   <Badge
-                    variant={handPresence ? "destructive" : "default"}
-                    className={handPresence ? "bg-red-500" : "bg-green-500"}
+                    variant={isHandOnScreenRef.current ? "destructive" : "default"}
+                    className={isHandOnScreenRef.current ? "bg-red-500" : "bg-green-500"}
                   >
-                    {handPresence ? "Detected" : "Not Detected"}
+                    {isHandOnScreenRef.current ? "Detected" : "Not Detected"}
                   </Badge>
                 </div>
                 <div className="flex justify-between items-center">
@@ -109,10 +112,10 @@ const Camera: React.FC = () => {
                 <div className="flex justify-between items-center">
                   <span className="text-muted-foreground">Status:</span>
                   <Badge
-                    variant={facePresence ? "default" : "destructive"}
-                    className={facePresence ? "bg-green-500" : "bg-red-500"}
+                    variant={!notFacingRef.current ? "default" : "destructive"}
+                    className={!notFacingRef.current ? "bg-green-500" : "bg-red-500"}
                   >
-                    {facePresence ? "Detected" : "Not Detected"}
+                    {!notFacingRef.current ? "Detected" : "Not Detected"}
                   </Badge>
                 </div>
                 <div className="flex justify-between items-center">
@@ -143,10 +146,10 @@ const Camera: React.FC = () => {
                 <div className="flex justify-between items-center">
                   <span className="text-muted-foreground">Status:</span>
                   <Badge
-                    variant={posePresence ? "default" : "destructive"}
-                    className={posePresence ? "bg-green-500" : "bg-red-500"}
+                    variant={!hasBadPostureRef.current ? "default" : "destructive"}
+                    className={!hasBadPostureRef.current ? "bg-green-500" : "bg-red-500"}
                   >
-                    {posePresence ? "Detected" : "Not Detected"}
+                    {hasBadPostureRef.current ? "Detected" : "Not Detected"}
                   </Badge>
                 </div>
                 <div className="flex justify-between items-center">
