@@ -2,7 +2,7 @@ import React, { useEffect, useRef, useState } from "react";
 import {
   FilesetResolver,
   HandLandmarker,
-  FaceDetector,
+  FaceLandmarker, // New import for Face Mesh with iris
   PoseLandmarker,
 } from "@mediapipe/tasks-vision";
 
@@ -27,7 +27,7 @@ const Camera: React.FC = () => {
 
   useEffect(() => {
     let handLandmarkerInstance: HandLandmarker | undefined;
-    let faceLandmarkerInstance: FaceDetector | undefined;
+    let faceLandmarkerInstance: FaceLandmarker | undefined; // Using FaceLandmarker now
     let poseLandmarkerInstance: PoseLandmarker | undefined;
     let animationFrameId: number | undefined;
 
@@ -52,20 +52,20 @@ const Camera: React.FC = () => {
       }
     };
 
-    const initializeFaceDetection = async (): Promise<void> => {
+    const initializeFaceMesh = async (): Promise<void> => {
       try {
         const vision = await FilesetResolver.forVisionTasks(
           "https://cdn.jsdelivr.net/npm/@mediapipe/tasks-vision@latest/wasm"
         );
-        faceLandmarkerInstance = await FaceDetector.createFromOptions(vision, {
+        faceLandmarkerInstance = await FaceLandmarker.createFromOptions(vision, {
           baseOptions: {
             modelAssetPath:
-              "https://storage.googleapis.com/mediapipe-models/face_detector/blaze_face_short_range/float16/latest/blaze_face_short_range.tflite",
+              "https://storage.googleapis.com/mediapipe-models/face_landmarker/face_landmarker/float16/1/face_landmarker.task",
           },
           runningMode: "VIDEO",
         });
       } catch (error) {
-        console.error("Error initializing face detection:", error);
+        console.error("Error initializing face mesh:", error);
       }
     };
 
@@ -94,7 +94,6 @@ const Camera: React.FC = () => {
       if (!canvas) return;
       const ctx = canvas.getContext("2d");
       if (!ctx) return;
-
       landmarksArray.forEach((landmarks) => {
         landmarks.forEach((landmark) => {
           const x = landmark.x * canvas.width;
@@ -107,26 +106,28 @@ const Camera: React.FC = () => {
       });
     };
 
-    const drawFaceLandmarks = (faceDetections: any): void => {
-      const canvas = canvasRef.current;
-      if (!canvas) return;
-      const ctx = canvas.getContext("2d");
-      if (!ctx) return;
-
-      faceDetections.detections.forEach((detection: any) => {
-        if (detection.keypoints) {
-          detection.keypoints.forEach((kp: any) => {
-            const x = kp.x * canvas.width;
-            const y = kp.y * canvas.height;
-            ctx.beginPath();
-            ctx.arc(x, y, 5, 0, 2 * Math.PI);
-            ctx.fillStyle = "blue";
-            ctx.fill();
-          });
-        }
-      });
-    };
-
+    const drawFaceMeshLandmarks = (faceDetections: any): void => {
+        const canvas = canvasRef.current;
+        if (!canvas) return;
+        const ctx = canvas.getContext("2d");
+        if (!ctx) return;
+        
+        console.log(faceDetections.faceLandmarks)
+        // Use the faceLandmarks property, which is an array of landmarks
+        const landmarks = faceDetections.faceLandmarks[0];
+        if (!landmarks || landmarks.length === 0) return;
+      
+        landmarks.forEach((landmark: Landmark, index: number) => {
+          const x = landmark.x * canvas.width;
+          const y = landmark.y * canvas.height;
+          ctx.beginPath();
+          // Differentiate iris landmarks (indices 468+)
+          ctx.fillStyle = index >= 468 ? "blue" : "white";
+          ctx.arc(x, y, 2, 0, 2 * Math.PI);
+          ctx.fill();
+        });
+      };
+      
     const drawPoseLandmarkeres = (poseLandmarks: Landmark[][]): void => {
       const canvas = canvasRef.current;
       if (!canvas) return;
@@ -197,17 +198,19 @@ const Camera: React.FC = () => {
         }
 
         if (faceLandmarkerInstance) {
-          const faceDetections = faceLandmarkerInstance.detectForVideo(
-            videoRef.current,
-            currentTime
-          );
-          setFacePresence(
-            faceDetections.detections && faceDetections.detections.length > 0
-          );
-          if (faceDetections.detections) {
-            drawFaceLandmarks(faceDetections);
+            const faceDetections = faceLandmarkerInstance.detectForVideo(
+              videoRef.current,
+              currentTime
+            );
+            // Update face presence based on whether there are landmarks
+            setFacePresence(
+              faceDetections.faceLandmarks &&
+                faceDetections.faceLandmarks.length > 0
+            );
+            if (faceDetections.faceLandmarks && faceDetections.faceLandmarks.length > 0) {
+              drawFaceMeshLandmarks(faceDetections);
+            }
           }
-        }
 
         if (poseLandmarkerInstance) {
           const poseDetection = poseLandmarkerInstance.detectForVideo(
@@ -232,9 +235,9 @@ const Camera: React.FC = () => {
         });
         if (videoRef.current) {
           videoRef.current.srcObject = stream;
-          await initializeHandDetection();
-          await initializeFaceDetection();
-          await initializePoseDetection();
+        //   await initializeHandDetection();
+          await initializeFaceMesh();
+        //   await initializePoseDetection();
           detect();
         }
       } catch (error) {
