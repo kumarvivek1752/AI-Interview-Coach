@@ -4,7 +4,6 @@ import {
   HandLandmarker,
   FaceDetector,
   PoseLandmarker,
-  HandLandmarkerResult,
 } from "@mediapipe/tasks-vision";
 
 interface Landmark {
@@ -22,7 +21,9 @@ const Camera: React.FC = () => {
 
   const [handDetectionCounter, setHandDetectionCounter] = useState<number>(0);
   const [handDetectionDuration, setHandDetectionDuration] = useState<number>(0);
+
   const isHandOnScreenRef = useRef<boolean>(false);
+  const handDetectionStartTimeRef = useRef<number>(0);
 
   useEffect(() => {
     let handLandmarkerInstance: HandLandmarker | undefined;
@@ -159,33 +160,41 @@ const Camera: React.FC = () => {
         }
 
         if (handLandmarkerInstance) {
-            const handDetections = handLandmarkerInstance.detectForVideo(
-              videoRef.current,
-              currentTime
-            );
-            setHandPresence(handDetections.handednesses.length > 0);
-            
+          const handDetections = handLandmarkerInstance.detectForVideo(
+            videoRef.current,
+            currentTime
+          );
+          setHandPresence(handDetections.handednesses.length > 0);
+          
             // Check if hand is detected
-            if (handDetections.landmarks.length > 0) {
-              if (!isHandOnScreenRef.current) {
-                // Increment counter only once when hand first appears.
-                setHandDetectionCounter((prev) => prev + 1);
-                isHandOnScreenRef.current = true;
-                console.log("Hand appeared, counter incremented.");
-              }
-            } else {
-              // Reset the ref when no hand is detected.
-              if (isHandOnScreenRef.current) {
-                isHandOnScreenRef.current = false;
-                console.log("Hand disappeared, flag reset.");
-              }
+          if (handDetections.landmarks.length > 0) {
+            if (!isHandOnScreenRef.current) {
+              // When a hand first appears:
+              setHandDetectionCounter((prev) => prev + 1);
+              // Record the start time
+              handDetectionStartTimeRef.current = currentTime;
+              isHandOnScreenRef.current = true;
+              console.log("Hand appeared, counter incremented.");
             }
-            
-            if (handDetections.landmarks) {
-              drawHandLandmarks(handDetections.landmarks);
+          } else {
+            // When no hand is detected
+            if (isHandOnScreenRef.current && handDetectionStartTimeRef.current) {
+              // Calculate the elapsed time in seconds
+              const durationSec = (currentTime - handDetectionStartTimeRef.current) / 1000;
+              setHandDetectionDuration((prev) => prev + durationSec);
+              // Reset the start time
+              handDetectionStartTimeRef.current = 0;
+              console.log(`Hand disappeared, duration added: ${durationSec} seconds.`);
+            }
+            if (isHandOnScreenRef.current) {
+              isHandOnScreenRef.current = false;
             }
           }
-    
+          
+          if (handDetections.landmarks) {
+            drawHandLandmarks(handDetections.landmarks);
+          }
+        }
 
         if (faceLandmarkerInstance) {
           const faceDetections = faceLandmarkerInstance.detectForVideo(
@@ -253,8 +262,9 @@ const Camera: React.FC = () => {
     <>
       <h1>
         Hand Detected: {handPresence ? "Yes" : "No"}; Hand Detected Counter:{" "}
-        {handDetectionCounter}; Face Detected: {facePresence ? "Yes" : "No"};
-        Pose Detected: {posePresence ? "Yes" : "No"};
+        {handDetectionCounter}; Total Hand Detection Duration:{" "}
+        {handDetectionDuration.toFixed(2)} seconds; Face Detected:{" "}
+        {facePresence ? "Yes" : "No"}; Pose Detected: {posePresence ? "Yes" : "No"}
       </h1>
       <div style={{ position: "relative", width: "600px", height: "480px" }}>
         <video
