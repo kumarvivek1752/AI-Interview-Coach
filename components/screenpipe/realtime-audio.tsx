@@ -336,38 +336,44 @@ export function RealtimeAudio({
       </Button>
       {summary && renderSummaryContent()}
 
-
       <Card className="mt-10">
         <CardHeader className="pb-2 bottom-0">
           <CardTitle className="text-lg flex items-center gap-2">
-            Interviewer's Audio
+            Interviewer&apos;s Audio
           </CardTitle>
         </CardHeader>
         <CardContent>
-        <div className="space-y-2">
-                <div className="flex justify-between items-center">
-                  <span className="text-muted-foreground">Status:</span>
-                  <Badge
-                    variant={isStreaming && isResponding ? "destructive" : "default"}
-                    className={isStreaming ? (isResponding ? "bg-red-500" : "bg-green-500") : "bg-red-500"}
-                  >
-                    {isStreaming ?
-                    (isResponding ? "Generating a response, please wait" : "Listening") 
-                    :
-                    ("Off")
-                  }
-                  </Badge>
-                </div>
-              </div>
-        {error && <p>{error}</p>}
-        {audioSrc && (
-          <audio controls src={audioSrc} autoPlay>
-            Your browser does not support the audio element.
-          </audio>
-        )}
+          <div className="space-y-2">
+            <div className="flex justify-between items-center">
+              <span className="text-muted-foreground">Status:</span>
+              <Badge
+                variant={
+                  isStreaming && isResponding ? "destructive" : "default"
+                }
+                className={
+                  isStreaming
+                    ? isResponding
+                      ? "bg-red-500"
+                      : "bg-green-500"
+                    : "bg-red-500"
+                }
+              >
+                {isStreaming
+                  ? isResponding
+                    ? "Generating a response, please wait"
+                    : "Listening"
+                  : "Off"}
+              </Badge>
+            </div>
+          </div>
+          {error && <p>{error}</p>}
+          {audioSrc && (
+            <audio controls src={audioSrc} autoPlay>
+              Your browser does not support the audio element.
+            </audio>
+          )}
         </CardContent>
       </Card>
-
     </div>
   );
 }
