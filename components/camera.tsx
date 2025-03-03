@@ -20,6 +20,10 @@ const Camera: React.FC = () => {
   const [facePresence, setFacePresence] = useState<boolean | null>(null);
   const [posePresence, setPosePresence] = useState<boolean | null>(null);
 
+  const [handDetectionCounter, setHandDetectionCounter] = useState<number>(0);
+  const [handDetectionDuration, setHandDetectionDuration] = useState<number>(0);
+  const isHandOnScreenRef = useRef<boolean>(false);
+
   useEffect(() => {
     let handLandmarkerInstance: HandLandmarker | undefined;
     let faceLandmarkerInstance: FaceDetector | undefined;
@@ -155,15 +159,33 @@ const Camera: React.FC = () => {
         }
 
         if (handLandmarkerInstance) {
-          const handDetections = handLandmarkerInstance.detectForVideo(
-            videoRef.current,
-            currentTime
-          );
-          setHandPresence(handDetections.handednesses.length > 0);
-          if (handDetections.landmarks) {
-            drawHandLandmarks(handDetections.landmarks);
+            const handDetections = handLandmarkerInstance.detectForVideo(
+              videoRef.current,
+              currentTime
+            );
+            setHandPresence(handDetections.handednesses.length > 0);
+            
+            // Check if hand is detected
+            if (handDetections.landmarks.length > 0) {
+              if (!isHandOnScreenRef.current) {
+                // Increment counter only once when hand first appears.
+                setHandDetectionCounter((prev) => prev + 1);
+                isHandOnScreenRef.current = true;
+                console.log("Hand appeared, counter incremented.");
+              }
+            } else {
+              // Reset the ref when no hand is detected.
+              if (isHandOnScreenRef.current) {
+                isHandOnScreenRef.current = false;
+                console.log("Hand disappeared, flag reset.");
+              }
+            }
+            
+            if (handDetections.landmarks) {
+              drawHandLandmarks(handDetections.landmarks);
+            }
           }
-        }
+    
 
         if (faceLandmarkerInstance) {
           const faceDetections = faceLandmarkerInstance.detectForVideo(
@@ -230,10 +252,9 @@ const Camera: React.FC = () => {
   return (
     <>
       <h1>
-        Hand Detected: {handPresence ? "Yes" : "No"}; 
-        Face Detected:{" "} {facePresence ? "Yes" : "No"};
-        Pose Detected:{" "} {posePresence ? "Yes" : "No"};
-
+        Hand Detected: {handPresence ? "Yes" : "No"}; Hand Detected Counter:{" "}
+        {handDetectionCounter}; Face Detected: {facePresence ? "Yes" : "No"};
+        Pose Detected: {posePresence ? "Yes" : "No"};
       </h1>
       <div style={{ position: "relative", width: "600px", height: "480px" }}>
         <video
