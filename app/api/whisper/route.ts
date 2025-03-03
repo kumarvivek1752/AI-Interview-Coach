@@ -19,13 +19,19 @@ export async function POST(req: Request) {
       modalities: ["text", "audio"],
       audio: { voice: "alloy", format: "wav" },
       messages: [
-        { role: "system", content: 
-          "Your name is Alloy, professional interviewer conducting a mock interview for a candidate. \
-          Your goal is to evaluate the candidate’s responses, identify areas for improvement,\
-           and provide constructive feedback on how they can enhance their answers, while conducting the interview."
+        {
+          role: "system",
+          content: `
+          Your name is Alloy, professional interviewer conducting a mock interview for a candidate. 
+          Your goal is to evaluate the candidate’s responses, identify areas for improvement,
+          and provide constructive feedback on how they can enhance their answers, while conducting the interview.
+          IMPORTANT: Use complete sentences and paragraphs only. Do not use any Markdown, special symbols, or bullet points.`,
         },
-        { role: "user", content: `Conversation History: ${history}`},
-        { role: "user", content: `Current conversation response or question: ${transcription}` },
+        { role: "user", content: `Conversation History: ${history}` },
+        {
+          role: "user",
+          content: `Current conversation response or question: ${transcription}`,
+        },
       ],
       store: true,
     });
