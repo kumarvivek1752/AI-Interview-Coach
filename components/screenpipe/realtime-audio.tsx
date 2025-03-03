@@ -6,6 +6,8 @@ import { Button } from "@/components/ui/button";
 import { Loader2 } from "lucide-react";
 import { useSettings } from "@/lib/settings-provider";
 import { useMetrics } from "@/context/MetricsContext";
+import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { Badge } from "@/components/ui/badge";
 
 export function RealtimeAudio({
   onDataChange,
@@ -26,6 +28,8 @@ export function RealtimeAudio({
   const [summary, setSummary] = useState<string | null>(null);
   const debounceTimeoutRef = useRef<NodeJS.Timeout | null>(null);
   const [loading, setLoading] = useState<boolean>(false);
+
+  const [isResponding, setIsResponding] = useState<boolean>(false);
 
   const { metrics } = useMetrics();
 
@@ -167,6 +171,7 @@ export function RealtimeAudio({
   };
 
   const generateAudio = async () => {
+    setIsResponding(true);
     try {
       const response = await fetch("/api/whisper", {
         method: "POST",
@@ -202,6 +207,8 @@ export function RealtimeAudio({
     } catch (error) {
       console.error("Error generating audio:", error);
       setError("Error generating audio");
+    } finally {
+      setIsResponding(false);
     }
   };
 
@@ -276,6 +283,7 @@ export function RealtimeAudio({
         <Button
           onClick={isStreaming ? stopStreaming : startStreaming}
           size="sm"
+          className="mb-2"
         >
           {isStreaming ? (
             <>
@@ -315,14 +323,6 @@ export function RealtimeAudio({
         </span>
       </div>
 
-      <div>
-        {error && <p>{error}</p>}
-        {audioSrc && (
-          <audio controls src={audioSrc} autoPlay>
-            Your browser does not support the audio element.
-          </audio>
-        )}
-      </div>
       <Button onClick={generateSummary}>
         {" "}
         {loading ? (
@@ -335,6 +335,39 @@ export function RealtimeAudio({
         )}
       </Button>
       {summary && renderSummaryContent()}
+
+
+      <Card className="mt-10">
+        <CardHeader className="pb-2 bottom-0">
+          <CardTitle className="text-lg flex items-center gap-2">
+            Interviewer's Audio
+          </CardTitle>
+        </CardHeader>
+        <CardContent>
+        <div className="space-y-2">
+                <div className="flex justify-between items-center">
+                  <span className="text-muted-foreground">Status:</span>
+                  <Badge
+                    variant={isStreaming && isResponding ? "destructive" : "default"}
+                    className={isStreaming ? (isResponding ? "bg-red-500" : "bg-green-500") : "bg-red-500"}
+                  >
+                    {isStreaming ?
+                    (isResponding ? "Generating a response, please wait" : "Listening") 
+                    :
+                    ("Off")
+                  }
+                  </Badge>
+                </div>
+              </div>
+        {error && <p>{error}</p>}
+        {audioSrc && (
+          <audio controls src={audioSrc} autoPlay>
+            Your browser does not support the audio element.
+          </audio>
+        )}
+        </CardContent>
+      </Card>
+
     </div>
   );
 }

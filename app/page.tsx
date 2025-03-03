@@ -15,9 +15,13 @@ export default function Page() {
     <SettingsProvider>
       <MetricsProvider>
         <ResizablePanelGroup direction="horizontal">
-          <ResizablePanel><RealtimeAudio /></ResizablePanel>
+          <ResizablePanel>
+            <RealtimeAudio />
+          </ResizablePanel>
           <ResizableHandle />
-          <ResizablePanel><Camera /></ResizablePanel>
+          <ResizablePanel>
+            <Camera />
+          </ResizablePanel>
         </ResizablePanelGroup>
       </MetricsProvider>
     </SettingsProvider>
