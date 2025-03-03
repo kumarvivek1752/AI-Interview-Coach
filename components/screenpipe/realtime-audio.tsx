@@ -19,6 +19,7 @@ export function RealtimeAudio({
     null
   );
   const [isStreaming, setIsStreaming] = useState(false);
+  const isStreamingRef = useRef(false);
   const [error, setError] = useState<string | null>(null);
   const [history, setHistory] = useState("");
   const historyRef = useRef(history);
@@ -56,6 +57,7 @@ export function RealtimeAudio({
 
       setError(null);
       setIsStreaming(true);
+      isStreamingRef.current = true;
 
       // Add error handling for the analytics connection issue
       const originalConsoleError = console.error;
@@ -72,10 +74,15 @@ export function RealtimeAudio({
         originalConsoleError.apply(console, [msg, ...args]);
       };
 
+      
       const stream = pipe.streamTranscriptions();
       streamRef.current = stream;
 
       for await (const event of stream) {
+        if(!isStreamingRef.current) {
+          console.log("Ended streaming and broke out of code");
+          break;
+        }
         if (event.choices?.[0]?.text) {
           const chunk: TranscriptionChunk = {
             transcription: event.choices[0].text,
@@ -125,6 +132,7 @@ export function RealtimeAudio({
       }
 
       setIsStreaming(false);
+      isStreamingRef.current = false;
     }
   };
 
@@ -133,6 +141,7 @@ export function RealtimeAudio({
       streamRef.current.return?.();
     }
     setIsStreaming(false);
+    isStreamingRef.current = false;
   };
 
   useEffect(() => {
@@ -171,6 +180,7 @@ export function RealtimeAudio({
   };
 
   const generateAudio = async () => {
+    if(!isStreamingRef.current) return;
     setIsResponding(true);
     try {
       const response = await fetch("/api/whisper", {
