@@ -201,44 +201,56 @@ export function RealtimeAudio({
     }
   };
 
-  const renderTranscriptionContent = (transcription: TranscriptionChunk) => {
+  const renderTranscriptionContent = (
+    transcription: TranscriptionChunk | null
+  ) => {
     return (
       <div className="space-y-2 text-xs">
         <div className="flex flex-col text-slate-600">
           <div className="grid grid-cols-2 gap-2">
             <div>
               <span className="font-semibold">timestamp: </span>
-              <span>{new Date(transcription.timestamp).toLocaleString()}</span>
+              <span>
+                {transcription
+                  ? new Date(transcription.timestamp).toLocaleString()
+                  : ""}
+              </span>
             </div>
             <div>
               <span className="font-semibold">device: </span>
-              <span>{transcription.device}</span>
+              <span>{transcription ? transcription.device : ""}</span>
             </div>
           </div>
           <div className="grid grid-cols-2 gap-2">
             <div>
               <span className="font-semibold">type: </span>
-              <span>{transcription.is_input ? "Input" : "Output"}</span>
+              <span>
+                {transcription
+                  ? transcription.is_input
+                    ? "Input"
+                    : "Output"
+                  : ""}
+              </span>
             </div>
             <div>
               <span className="font-semibold">final: </span>
-              <span>{transcription.is_final ? "Yes" : "No"}</span>
+              <span>
+                {transcription ? (transcription.is_final ? "Yes" : "No") : ""}
+              </span>
             </div>
           </div>
         </div>
 
         <div className="bg-slate-100 rounded p-2 overflow-auto max-h-[100px] whitespace-pre-wrap font-mono text-xs">
-          {transcription.transcription}
+          {transcription ? transcription.transcription : ""}
         </div>
 
-        {history && (
-          <div className="mt-2">
-            <div className="text-slate-600 font-semibold mb-1">History:</div>
-            <div className="bg-slate-100 rounded p-2 overflow-auto h-[130px] whitespace-pre-wrap font-mono text-xs">
-              {history}
-            </div>
+        <div className="mt-2">
+          <div className="text-slate-600 font-semibold mb-1">History:</div>
+          <div className="bg-slate-100 rounded p-2 overflow-auto h-[130px] whitespace-pre-wrap font-mono text-xs">
+            {history}
           </div>
-        )}
+        </div>
       </div>
     );
   };
@@ -272,12 +284,10 @@ export function RealtimeAudio({
             Clear History
           </Button>
         )}
-
-        <Button onClick={generateSummary}>Summary Result</Button>
       </div>
 
       {error && <p className="text-xs text-red-500">{error}</p>}
-      {transcription && renderTranscriptionContent(transcription)}
+      {renderTranscriptionContent(transcription)}
 
       <div className="flex items-center gap-1.5 text-right justify-end">
         <div
@@ -300,6 +310,7 @@ export function RealtimeAudio({
           <p>Loading audio...</p>
         )}
       </div>
+      <Button onClick={generateSummary}>Summary Result</Button>
     </div>
   );
 }
