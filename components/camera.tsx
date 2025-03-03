@@ -4,12 +4,16 @@ import {
   HandLandmarker,
   FaceLandmarker,
   PoseLandmarker,
+  DrawingUtils,
+  GestureRecognizer
 } from "@mediapipe/tasks-vision";
+import { Button } from "@/components/ui/button";
 
 interface Landmark {
   x: number;
   y: number;
   z: number;
+  visibility: number;
 }
 
 const Camera: React.FC = () => {
@@ -27,6 +31,8 @@ const Camera: React.FC = () => {
   const [notFacingDuration, setNotFacingDuration] = useState<number>(0);
   const notFacingStartTimeRef = useRef<number | null>(null);
   const notFacingRef = useRef<boolean>(false);
+
+  const displayOverlayRef = useRef<boolean>(false);
 
   useEffect(() => {
     let handLandmarkerInstance: HandLandmarker | undefined;
@@ -100,17 +106,19 @@ const Camera: React.FC = () => {
       if (!canvas) return;
       const ctx = canvas.getContext("2d");
       if (!ctx) return;
+      
+      // Create a DrawingUtils instance with the current canvas context.
+      const drawingUtils = new DrawingUtils(ctx);
+      
       landmarksArray.forEach((landmarks) => {
-        landmarks.forEach((landmark) => {
-          const x = landmark.x * canvas.width;
-          const y = landmark.y * canvas.height;
-          ctx.beginPath();
-          ctx.arc(x, y, 5, 0, 2 * Math.PI);
-          ctx.fillStyle = "#FFFFFF";
-          ctx.fill();
+        drawingUtils.drawConnectors(landmarks, GestureRecognizer.HAND_CONNECTIONS, {
+          color: "#1b998b",
+          lineWidth: 2
         });
+        drawingUtils.drawLandmarks(landmarks, { color: "#d7263d", lineWidth: 1 });
       });
     };
+    
 
     const drawFaceMeshLandmarks = (faceDetections: any): void => {
       const canvas = canvasRef.current;
@@ -128,7 +136,7 @@ const Camera: React.FC = () => {
         const y = landmark.y * canvas.height;
         ctx.beginPath();
         // Use blue for iris landmarks (assumed to be indices 468-472 for the right iris)
-        ctx.fillStyle = index >= 468 && index < 468 + 5 ? "blue" : "white";
+        ctx.fillStyle = (index >= 468 && index < 468 + 10) ? "#219ebc" : "white";
         ctx.arc(x, y, 2, 0, 2 * Math.PI);
         ctx.fill();
       });
@@ -199,12 +207,12 @@ const Camera: React.FC = () => {
       const ctx = canvas.getContext("2d");
       if (!ctx) return;
       poseLandmarks.forEach((landmarks) => {
-        landmarks.forEach((landmark) => {
+        landmarks.forEach((landmark, index) => {
           const x = landmark.x * canvas.width;
           const y = landmark.y * canvas.height;
           ctx.beginPath();
           ctx.arc(x, y, 5, 0, 2 * Math.PI);
-          ctx.fillStyle = "green"; // green for pose landmarks
+          ctx.fillStyle = (index >= 0 && index <= 10) || (index >= 15 && index < 22) ? "transparent" : "#fb8500";
           ctx.fill();
         });
       });
@@ -263,7 +271,8 @@ const Camera: React.FC = () => {
             }
           }
 
-          if (handDetections.landmarks) {
+          if (handDetections.landmarks &&
+            displayOverlayRef.current) {
             drawHandLandmarks(handDetections.landmarks);
           }
         }
@@ -281,7 +290,8 @@ const Camera: React.FC = () => {
           );
           if (
             faceDetections.faceLandmarks &&
-            faceDetections.faceLandmarks.length > 0
+            faceDetections.faceLandmarks.length > 0 &&
+            displayOverlayRef.current
           ) {
             drawFaceMeshLandmarks(faceDetections);
           }
@@ -314,7 +324,8 @@ const Camera: React.FC = () => {
           setPosePresence(
             poseDetection.landmarks && poseDetection.landmarks.length > 0
           );
-          if (poseDetection.landmarks) {
+          if (poseDetection.landmarks &&
+            displayOverlayRef.current) {
             drawPoseLandmarkeres(poseDetection.landmarks);
           }
         }
@@ -366,6 +377,8 @@ const Camera: React.FC = () => {
         {notFacingDuration.toFixed(2)} seconds;
 
       </h1>
+      <Button onClick={() => displayOverlayRef.current = !displayOverlayRef.current}>Toggle Overlay</Button>
+
       <div style={{ position: "relative", width: "600px", height: "480px" }}>
         <video
           ref={videoRef}
