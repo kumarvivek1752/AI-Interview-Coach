@@ -112,21 +112,68 @@ const Camera: React.FC = () => {
         const ctx = canvas.getContext("2d");
         if (!ctx) return;
         
-        console.log(faceDetections.faceLandmarks)
-        // Use the faceLandmarks property, which is an array of landmarks
+        // Get the landmarks for the first detected face.
         const landmarks = faceDetections.faceLandmarks[0];
         if (!landmarks || landmarks.length === 0) return;
-      
+        
+        // Draw all landmarks.
         landmarks.forEach((landmark: Landmark, index: number) => {
           const x = landmark.x * canvas.width;
           const y = landmark.y * canvas.height;
           ctx.beginPath();
-          // Differentiate iris landmarks (indices 468+)
-          ctx.fillStyle = index >= 468 ? "blue" : "white";
+          // Use blue for iris landmarks (assumed to be indices 468-472 for the right iris)
+          ctx.fillStyle = index >= 468 && index < 468 + 5 ? "blue" : "white";
           ctx.arc(x, y, 2, 0, 2 * Math.PI);
           ctx.fill();
         });
+        
+        // --- Gaze Estimation for the Right Eye ---
+        // Define eye corner indices (commonly used values for the right eye).
+        const rightEyeOuter = landmarks[33]; // outer corner
+        const rightEyeInner = landmarks[133]; // inner corner
+        
+        // Extract the right iris landmarks (indices 468 to 472).
+        const rightIrisLandmarks = landmarks.slice(468, 468 + 5);
+        
+        // Compute the iris center by averaging the iris landmark coordinates.
+        const rightIrisCenter = {
+          x: rightIrisLandmarks.reduce((sum: number, pt: Landmark) => sum + pt.x, 0) / rightIrisLandmarks.length,
+          y: rightIrisLandmarks.reduce((sum: number, pt: Landmark) => sum + pt.y, 0) / rightIrisLandmarks.length,
+          z: rightIrisLandmarks.reduce((sum: number, pt: Landmark) => sum + pt.z, 0) / rightIrisLandmarks.length,
+        };
+        
+        // Compute the projection of the iris center onto the line between the eye corners.
+        const A = rightEyeOuter;
+        const B = rightEyeInner;
+        const I = rightIrisCenter;
+        
+        // Vector from A to B.
+        const AB = { x: B.x - A.x, y: B.y - A.y };
+        // Vector from A to I.
+        const AI = { x: I.x - A.x, y: I.y - A.y };
+        
+        // Calculate the dot product and the squared length of AB.
+        const dot = AI.x * AB.x + AI.y * AB.y;
+        const norm2 = AB.x * AB.x + AB.y * AB.y;
+        // Normalized position along the eye (t = 0 means at the outer corner, t = 1 means at the inner corner).
+        const t = dot / norm2;
+        
+        // Determine if the iris is roughly centered.
+        // Adjust these thresholds based on your calibration.
+        const isLookingForward = t >= 0.4 && t <= 0.6;
+        
+        // Draw the gaze status near the iris.
+        const irisX = rightIrisCenter.x * canvas.width;
+        const irisY = rightIrisCenter.y * canvas.height;
+        ctx.font = "18px Arial";
+        ctx.fillStyle = "yellow";
+        ctx.fillText(
+          isLookingForward ? "Looking Forward" : "Looking Away",
+          irisX,
+          irisY - 10
+        );
       };
+      
       
     const drawPoseLandmarkeres = (poseLandmarks: Landmark[][]): void => {
       const canvas = canvasRef.current;
