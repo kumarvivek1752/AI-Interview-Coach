@@ -32,6 +32,11 @@ const Camera: React.FC = () => {
   const notFacingStartTimeRef = useRef<number | null>(null);
   const notFacingRef = useRef<boolean>(false);
 
+  const[ badPostureDetectionCounter, setBadPostureDetectionCounter] = useState<number>(0);
+  const [badPostureDuration, setBadPostureDuration] = useState<number>(0);
+  const hasBadPostureRef = useRef<boolean>(false);
+  const badPostureStartTimeRef = useRef<number>(0);
+
   const displayOverlayRef = useRef<boolean>(false);
 
   useEffect(() => {
@@ -218,6 +223,22 @@ const Camera: React.FC = () => {
       });
     };
 
+    const checkBadPosture = (landmarks: Landmark[]): boolean => {
+      const head = landmarks[0];
+      const leftShoulder = landmarks[11];
+      const rightShoulder = landmarks[12];
+      if (!head || !leftShoulder || !rightShoulder) return false;
+      const midShoulders = {
+        x: (leftShoulder.x + rightShoulder.x) / 2,
+        y: (leftShoulder.y + rightShoulder.y) / 2
+      };
+      const dx = head.x - midShoulders.x;
+      const dy = head.y - midShoulders.y;
+      const distance = Math.sqrt(dx * dx + dy * dy);
+      // Adjust threshold as needed; here 0.15 is an example value.
+      return distance < 0.2;
+    };
+
     // Combined detection and drawing function
     const detect = (): void => {
       if (
@@ -324,6 +345,27 @@ const Camera: React.FC = () => {
           setPosePresence(
             poseDetection.landmarks && poseDetection.landmarks.length > 0
           );
+
+          const poseLandmarks = poseDetection.landmarks[0];
+
+            // Check for bad posture using our helper function.
+            if (checkBadPosture(poseLandmarks)) {
+              if (!hasBadPostureRef.current) {
+                setBadPostureDetectionCounter(prev => prev + 1);
+                badPostureStartTimeRef.current = currentTime;
+                hasBadPostureRef.current = true;
+                console.log("Bad posture detected, counter incremented.");
+              }
+            } else {
+              if (hasBadPostureRef.current) {
+                const durationSec = (currentTime - badPostureStartTimeRef.current) / 1000;
+                setBadPostureDuration(prev => prev + durationSec);
+                badPostureStartTimeRef.current = 0;
+                hasBadPostureRef.current = false;
+                console.log("Bad posture ended, duration added:", durationSec);
+              }
+            }
+
           if (poseDetection.landmarks &&
             displayOverlayRef.current) {
             drawPoseLandmarkeres(poseDetection.landmarks);
@@ -369,13 +411,22 @@ const Camera: React.FC = () => {
   return (
     <>
       <h1>
-        Hand Detected: {handPresence ? "Yes" : "No"}; Hand Detected Counter:{" "}
-        {handDetectionCounter}; Total Hand Detection Duration:{" "}
-        {handDetectionDuration.toFixed(2)} seconds; Face Detected:{" "}
-        {facePresence ? "Yes" : "No"}; Pose Detected:{" "}
-        {posePresence ? "Yes" : "No"}
-        {notFacingDuration.toFixed(2)} seconds;
-
+        Hand Detected: {handPresence ? "Yes" : "No"}
+        <br />
+        Hand Detected Counter:{handDetectionCounter}
+        <br />
+        Total Hand Detection Duration:
+        {handDetectionDuration.toFixed(2)} seconds
+        <br />
+        Face Detected: {facePresence ? "Yes" : "No"}
+        <br />
+        Not looking at screen: {notFacingDuration.toFixed(2)} seconds
+        <br />
+        Pose Detected:{" "} {posePresence ? "Yes" : "No"}
+        <br />
+        Bad Posture Count: {badPostureDetectionCounter}
+        <br />
+        Bad Posture Duration: {badPostureDuration.toFixed(2)} sec
       </h1>
       <Button onClick={() => displayOverlayRef.current = !displayOverlayRef.current}>Toggle Overlay</Button>
 
