@@ -269,7 +269,6 @@ const Camera: React.FC = () => {
               // Record the start time
               handDetectionStartTimeRef.current = currentTime;
               isHandOnScreenRef.current = true;
-              console.log("Hand appeared, counter incremented.");
             }
           } else {
             // When no hand is detected
@@ -283,9 +282,6 @@ const Camera: React.FC = () => {
               setHandDetectionDuration((prev) => prev + durationSec);
               // Reset the start time
               handDetectionStartTimeRef.current = 0;
-              console.log(
-                `Hand disappeared, duration added: ${durationSec} seconds.`
-              );
             }
             if (isHandOnScreenRef.current) {
               isHandOnScreenRef.current = false;
@@ -304,7 +300,6 @@ const Camera: React.FC = () => {
             currentTime
           );
 
-        //   console.log("Face land marker instance: ", currentTime);
           setFacePresence(
             faceDetections.faceLandmarks &&
               faceDetections.faceLandmarks.length > 0
@@ -318,11 +313,9 @@ const Camera: React.FC = () => {
           }
 
           if (faceDetections.faceLandmarks.length > 0) {
-            console.log("Inside face is present")
             if (notFacingRef.current) {
               // If not facing forward, start timer if not already started
               if (notFacingStartTimeRef.current === null) {
-                console.log("start facing away timer")
                 notFacingStartTimeRef.current = currentTime;
               }
             } else {
@@ -331,7 +324,6 @@ const Camera: React.FC = () => {
                 const elapsedSec = (currentTime - notFacingStartTimeRef.current) / 1000;
                 setNotFacingDuration((prev) => prev + elapsedSec);
                 notFacingStartTimeRef.current = null;
-                console.log("Update TIMER: ", notFacingDuration);
               }
             }
           }
@@ -354,7 +346,6 @@ const Camera: React.FC = () => {
                 setBadPostureDetectionCounter(prev => prev + 1);
                 badPostureStartTimeRef.current = currentTime;
                 hasBadPostureRef.current = true;
-                console.log("Bad posture detected, counter incremented.");
               }
             } else {
               if (hasBadPostureRef.current) {
@@ -362,7 +353,6 @@ const Camera: React.FC = () => {
                 setBadPostureDuration(prev => prev + durationSec);
                 badPostureStartTimeRef.current = 0;
                 hasBadPostureRef.current = false;
-                console.log("Bad posture ended, duration added:", durationSec);
               }
             }
 

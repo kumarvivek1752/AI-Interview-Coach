@@ -4,10 +4,8 @@ import OpenAI from "openai";
 const openai = new OpenAI({ apiKey: process.env.OPENAI_API_KEY });
 
 export async function POST(req: Request) {
-  console.log("Inside of whisper endpoint")
   try {
     const { transcription, history } = await req.json();
-    console.log("✅ THIS IS THE HISTORY I GOT ON THE SERVER ", history);
 
     if (!transcription) {
       return NextResponse.json(
