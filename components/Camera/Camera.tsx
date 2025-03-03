@@ -125,7 +125,6 @@ const Camera: React.FC = () => {
                 <div className="flex justify-between items-center">
                   <span className="text-muted-foreground">Looking Away:</span>
                   <div className="flex items-center gap-1">
-                    <Eye className="h-4 w-4 text-amber-500" />
                     <span className="font-medium">{notFacingDuration.toFixed(2)} seconds</span>
                   </div>
                 </div>
@@ -155,9 +154,6 @@ const Camera: React.FC = () => {
                 <div className="flex justify-between items-center">
                   <span className="text-muted-foreground">Bad Posture Count:</span>
                   <div className="flex items-center gap-1">
-                    <AlertTriangle
-                      className={`h-4 w-4 ${badPostureDetectionCounter > 3 ? "text-red-500" : "text-amber-500"}`}
-                    />
                     <span className="font-medium">{badPostureDetectionCounter}</span>
                   </div>
                 </div>
