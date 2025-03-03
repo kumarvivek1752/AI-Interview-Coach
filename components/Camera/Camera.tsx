@@ -1,7 +1,9 @@
 import React, { useRef, useState } from "react";
 import { useCamera } from "../../hooks/useCamera";
-import { useMediapipe } from "../../hooks/useMediaPipe"
+import { useMediapipe } from "../../hooks/useMediaPipe";
 import { Button } from "@/components/ui/button";
+import { Switch } from "@/components/ui/switch";
+import { Label } from "@radix-ui/react-label";
 
 const Camera: React.FC = () => {
   const videoRef = useRef<HTMLVideoElement>(null);
@@ -24,18 +26,31 @@ const Camera: React.FC = () => {
   return (
     <>
       <h1>
-        Hand Detected: {handPresence ? "Yes" : "No"}<br />
-        Hand Detection Counter: {handDetectionCounter}<br />
-        Total Hand Detection Duration: {handDetectionDuration.toFixed(2)} seconds<br />
-        Face Detected: {facePresence ? "Yes" : "No"}<br />
-        Not Looking at Screen: {notFacingDuration.toFixed(2)} seconds<br />
-        Pose Detected: {posePresence ? "Yes" : "No"}<br />
-        Bad Posture Count: {badPostureDetectionCounter}<br />
+        Hand Detected: {handPresence ? "Yes" : "No"}
+        <br />
+        Hand Detection Counter: {handDetectionCounter}
+        <br />
+        Total Hand Detection Duration: {handDetectionDuration.toFixed(2)}{" "}
+        seconds
+        <br />
+        Face Detected: {facePresence ? "Yes" : "No"}
+        <br />
+        Not Looking at Screen: {notFacingDuration.toFixed(2)} seconds
+        <br />
+        Pose Detected: {posePresence ? "Yes" : "No"}
+        <br />
+        Bad Posture Count: {badPostureDetectionCounter}
+        <br />
         Bad Posture Duration: {badPostureDuration.toFixed(2)} sec
       </h1>
-      <Button onClick={() => setOverlayEnabled((prev) => !prev)}>
-        Toggle Overlay
-      </Button>
+      <div className="flex items-center space-x-2">
+        <Switch
+          id="overlay-toggle"
+          checked={overlayEnabled}
+          onCheckedChange={() => setOverlayEnabled((prev) => !prev)}
+        />
+        <Label htmlFor="overlay-toggle">Toggle Overlay</Label>
+      </div>
       <div style={{ position: "relative", width: "600px", height: "480px" }}>
         <video
           ref={videoRef}
