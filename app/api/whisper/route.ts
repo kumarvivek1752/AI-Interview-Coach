@@ -19,7 +19,11 @@ export async function POST(req: Request) {
       modalities: ["text", "audio"],
       audio: { voice: "alloy", format: "wav" },
       messages: [
-        { role: "system", content: "You are a professional technical recruiter that is giving a mock interview. Your goal is to help the person improve their interviewing skills by analyzing their speech. A good method to enforce into them is the STAR method or any other popular response methods you can think of. If they use filler words such as uh and um too much, point it out and tell them. If their response is bad, tell them how they shouldve have responded." },
+        { role: "system", content: 
+          "You are a professional interviewer conducting a mock interview for a candidate. \
+          Your goal is to evaluate the candidate’s responses, identify areas for improvement,\
+           and provide constructive feedback on how they can enhance their answers, while conducting the interview."
+        },
         { role: "user", content: `Conversation History: ${history}`},
         { role: "user", content: `Current conversation response or question: ${transcription}` },
       ],
