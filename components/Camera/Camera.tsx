@@ -78,8 +78,8 @@ const Camera: React.FC = () => {
                 <div className="flex justify-between items-center">
                   <span className="text-muted-foreground">Status:</span>
                   <Badge
-                    variant={handPresence ? "success" : "destructive"}
-                    className={handPresence ? "bg-green-500" : "bg-red-500"}
+                    variant={handPresence ? "destructive" : "default"}
+                    className={handPresence ? "bg-red-500" : "bg-green-500"}
                   >
                     {handPresence ? "Detected" : "Not Detected"}
                   </Badge>
@@ -109,7 +109,7 @@ const Camera: React.FC = () => {
                 <div className="flex justify-between items-center">
                   <span className="text-muted-foreground">Status:</span>
                   <Badge
-                    variant={facePresence ? "success" : "destructive"}
+                    variant={facePresence ? "default" : "destructive"}
                     className={facePresence ? "bg-green-500" : "bg-red-500"}
                   >
                     {facePresence ? "Detected" : "Not Detected"}
@@ -143,7 +143,7 @@ const Camera: React.FC = () => {
                 <div className="flex justify-between items-center">
                   <span className="text-muted-foreground">Status:</span>
                   <Badge
-                    variant={posePresence ? "success" : "destructive"}
+                    variant={posePresence ? "default" : "destructive"}
                     className={posePresence ? "bg-green-500" : "bg-red-500"}
                   >
                     {posePresence ? "Detected" : "Not Detected"}
