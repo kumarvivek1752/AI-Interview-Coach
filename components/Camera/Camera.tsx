@@ -35,7 +35,7 @@ const Camera: React.FC = () => {
       <div className="flex flex-col gap-6">
         <div className="flex flex-col md:flex-row justify-between items-start md:items-center gap-4">
           <h1 className="text-2xl font-bold">Posture & Attention Monitoring</h1>
-          <div className="flex items-center space-x-2 bg-muted p-2 rounded-lg">
+          <div className="flex items-center space-x-2 bg-slate-100 p-2 rounded-lg">
             <Switch
               id="overlay-toggle"
               checked={overlayEnabled}
@@ -48,7 +48,7 @@ const Camera: React.FC = () => {
         </div>
 
         {/* Camera and Canvas Container */}
-        <div className="flex justify-center w-full bg-muted rounded-xl p-4">
+        <div className="flex justify-center w-full bg-slate-100 rounded-xl p-4">
           <div className="relative w-full max-w-[600px] h-[480px]">
             <video
               ref={videoRef}
@@ -104,7 +104,7 @@ const Camera: React.FC = () => {
             <CardHeader className="pb-2">
               <CardTitle className="text-lg flex items-center gap-2">
                 <Eye className="h-5 w-5" />
-                Eye Detection
+                Eye Contact Detection
               </CardTitle>
             </CardHeader>
             <CardContent>
@@ -137,7 +137,7 @@ const Camera: React.FC = () => {
             <CardHeader className="pb-2">
               <CardTitle className="text-lg flex items-center gap-2">
                 <Activity className="h-5 w-5" />
-                Posture Monitoring
+                Bad Posture Monitoring
               </CardTitle>
             </CardHeader>
             <CardContent>
