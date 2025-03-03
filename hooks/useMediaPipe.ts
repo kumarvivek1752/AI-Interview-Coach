@@ -10,6 +10,7 @@ import { initializeFaceDetection } from "../lib/mediapipe/faceDetection";
 import { initializePoseDetection } from "../lib/mediapipe/poseDetection";
 import { isFacingForward, isBadPosture } from "../lib/analytics";
 import { drawHandLandmarks, drawFaceMeshLandmarks, drawPoseLandmarkers } from "../lib/drawing";
+import { useMetrics } from "@/context/MetricsContext";
 
 export const useMediapipe = (
   videoRef: React.RefObject<HTMLVideoElement>,
@@ -40,6 +41,29 @@ export const useMediapipe = (
   const handDetectorRef = useRef<HandLandmarker>();
   const faceDetectorRef = useRef<FaceLandmarker>();
   const poseDetectorRef = useRef<PoseLandmarker>();
+
+  const { updateMetrics } = useMetrics();
+
+  useEffect(() => {
+    const timer = setTimeout(() => {
+      updateMetrics({
+        handDetectionCounter,
+        handDetectionDuration,
+        notFacingDuration,
+        badPostureDetectionCounter,
+        badPostureDuration
+      });
+    }, 1000);
+    
+    return () => clearTimeout(timer);
+  }, [
+    updateMetrics,
+    handDetectionCounter, 
+    handDetectionDuration,
+    notFacingDuration,
+    badPostureDetectionCounter,
+    badPostureDuration
+  ]);
 
   useEffect(() => {
     let animationFrameId: number;

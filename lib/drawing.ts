@@ -59,7 +59,7 @@ export const drawPoseLandmarkers = (
       const y = landmark.y * canvas.height;
       ctx.beginPath();
       ctx.arc(x, y, 5, 0, 2 * Math.PI);
-      ctx.fillStyle = "#fb8500";
+      ctx.fillStyle = (index >= 0 && index <= 10) || (index >= 15 && index <= 22) ? "transparent" : "#fb8500";
       ctx.fill();
     });
   });
