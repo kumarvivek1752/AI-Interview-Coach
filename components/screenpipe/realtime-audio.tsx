@@ -23,10 +23,11 @@ export function RealtimeAudio({
   const streamRef = useRef<any>(null);
   const transcriptionRef = useRef("");
   const [audioSrc, setAudioSrc] = useState<string>("");
+  const [summary, setSummary] = useState<string | null>(null);
   const debounceTimeoutRef = useRef<NodeJS.Timeout | null>(null);
+  const [loading, setLoading] = useState<boolean>(false);
 
   const { metrics } = useMetrics();
-
 
   // Update ref when history changes
   useEffect(() => {
@@ -137,6 +138,7 @@ export function RealtimeAudio({
   }, []);
 
   const generateSummary = async () => {
+    setLoading(true);
     try {
       const response = await fetch("/api/openai", {
         method: "POST",
@@ -151,14 +153,16 @@ export function RealtimeAudio({
 
       const data = await response.json();
       if (response.ok) {
-        // Use data.message to access the OpenAI response
-        console.log(data.message);
+        setSummary(data.message);
       } else {
-        // Handle error
         console.error(data.error);
+        setSummary("Failed to generate summary.");
       }
     } catch (err) {
       console.error("Error generating a summary: ", err);
+      setSummary("An error occurred while generating the summary.");
+    } finally {
+      setLoading(false);
     }
   };
 
@@ -191,7 +195,7 @@ export function RealtimeAudio({
       const audioUrl = URL.createObjectURL(audioBlob);
 
       const newHistory =
-        historyRef.current + "Bot: " + data.transcription + "\n";
+        historyRef.current + "Alloy: " + data.transcription + "\n";
       setHistory(newHistory);
 
       setAudioSrc(audioUrl);
@@ -255,8 +259,19 @@ export function RealtimeAudio({
     );
   };
 
+  const renderSummaryContent = () => {
+    return (
+      <div className="mt-2">
+        <div className="text-slate-600 font-semibold mb-1">Summary:</div>
+        <div className="bg-slate-100 rounded p-2 overflow-auto h-[130px] whitespace-pre-wrap font-mono text-xs">
+          {summary}
+        </div>
+      </div>
+    );
+  };
+
   return (
-    <div className="space-y-2">
+    <div className="container mx-auto px-4 py-6 max-w-6xl">
       <div className="flex justify-between items-center">
         <Button
           onClick={isStreaming ? stopStreaming : startStreaming}
@@ -302,15 +317,24 @@ export function RealtimeAudio({
 
       <div>
         {error && <p>{error}</p>}
-        {audioSrc ? (
+        {audioSrc && (
           <audio controls src={audioSrc} autoPlay>
             Your browser does not support the audio element.
           </audio>
-        ) : (
-          <p>Loading audio...</p>
         )}
       </div>
-      <Button onClick={generateSummary}>Summary Result</Button>
+      <Button onClick={generateSummary}>
+        {" "}
+        {loading ? (
+          <>
+            <Loader2 className="mr-1 h-3 w-3 animate-spin" />
+            Creating Summary
+          </>
+        ) : (
+          "Interview Summary"
+        )}
+      </Button>
+      {summary && renderSummaryContent()}
     </div>
   );
 }

@@ -15,6 +15,7 @@ export async function POST(req: Request) {
           content: 
           `
             You are a professional recruiter and interview coach reviewing a recorded mock interview session. 
+            Alloy is the interviewer and 'You' is the interviewee. 'You' is the person you will be evaluating.
             Your goal is to provide a comprehensive performance review that helps the interviewee improve their interviewing skills, 
             both in terms of verbal responses and non-verbal communication (body language, posture, eye contact, etc.).
 
@@ -64,6 +65,8 @@ export async function POST(req: Request) {
 
             Final Goal:
             Your review should provide a balanced assessment of both the verbal responses and the non-verbal presence, helping the interviewee improve in both content delivery and professional presence.
+
+            IMPORTANT: Use complete sentences and paragraphs only. Do not use any Markdown, special symbols, or bullet points.
           `,
         },
         { role: "user", content: `Conversation History: ${history}` },
