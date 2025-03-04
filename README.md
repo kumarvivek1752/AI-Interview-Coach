@@ -1,11 +1,10 @@
-# BetterView
+# AI Interview Coach
 
-BetterView is an AI interviewing platform that simulates real interview environments by combining audio processing and screen capturing technologies. It leverages Screenpipe for real-time audio transcription, OpenAI for generating contextually relevant audio feedback, and MediaPipe for analyzing non-verbal cues such as eye movement, hand gestures, and posture to provide actionable insights for improving interview performance.
+Simulates a real interview environment by combining body language tracking (eye contact, posture, and hand movements) with an evaluation of answer quality based on audio transcription. It guides the user through the interview process and provides a final evaluation.
 
 ## Demo
 
-Check out the demo video on YouTube:
-[![BetterView Demo](https://img.youtube.com/vi/GokPYYGrF5g/0.jpg)](https://www.youtube.com/watch?v=GokPYYGrF5g)
+[![AI Interview Coach Demo](https://img.youtube.com/vi/GokPYYGrF5g/0.jpg)](https://www.youtube.com/watch?v=GokPYYGrF5g)
 
 ## Technologies Used
 
@@ -35,7 +34,7 @@ Check out the demo video on YouTube:
 
 1. **Clone the repository:**
    ```bash
-   git clone https://github.com/yourusername/betterview.git
+   git clone https://github.com/yourusername/AI-Interview-Coach.git
    ```
 2. **Install dependencies:**
     ```bash
