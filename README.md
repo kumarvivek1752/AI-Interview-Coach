@@ -33,3 +33,20 @@ Check out the demo video on YouTube:
 
 ### Installation
 
+1. **Clone the repository:**
+   ```bash
+   git clone https://github.com/yourusername/betterview.git
+   ```
+2. **Install dependencies:**
+    ```bash
+    npm install
+    ```
+3. **Configure environment variables: Create a .env file in the root directory and add your API keys and configuration settings:**
+    ```bash
+    OPENAI_API_KEY=your_api_key_here
+    ```
+4. **Run Development Server:**
+    ```bash
+    npm run dev
+    ```
+Open http://localhost:3000 in your browser to view the application.
