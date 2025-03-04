@@ -39,7 +39,7 @@ Check out the demo video on YouTube:
    ```
 2. **Install dependencies:**
     ```bash
-    npm install
+    bun install
     ```
 3. **Configure environment variables: Create a .env file in the root directory and add your API keys and configuration settings:**
     ```bash
